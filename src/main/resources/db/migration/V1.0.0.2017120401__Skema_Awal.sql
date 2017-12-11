@@ -25,7 +25,6 @@ CREATE TABLE virtual_account_request (
   description    VARCHAR(255),
   email          VARCHAR(255),
   phone          VARCHAR(255),
-  transaction_id VARCHAR(255)   NOT NULL,
   expire_date    DATE           NOT NULL,
   request_status VARCHAR(255)   NOT NULL,
   PRIMARY KEY (id)

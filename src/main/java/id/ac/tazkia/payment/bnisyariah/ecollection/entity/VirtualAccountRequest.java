@@ -1,5 +1,6 @@
 package id.ac.tazkia.payment.bnisyariah.ecollection.entity;
 
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data @Entity
+@Data @Entity @Builder
 public class VirtualAccountRequest {
     @Id
     @GeneratedValue(generator = "uuid")
@@ -51,5 +52,5 @@ public class VirtualAccountRequest {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private RequestStatus requestStatus;
+    private RequestStatus requestStatus = RequestStatus.NEW;
 }
