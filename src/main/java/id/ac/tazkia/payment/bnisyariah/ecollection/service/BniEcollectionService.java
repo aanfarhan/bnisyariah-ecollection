@@ -76,23 +76,16 @@ public class BniEcollectionService {
             Map<String, String> hasil = executeRequest(createVaRequest);
             LOGGER.debug("Create VA Response : {}", objectMapper.writeValueAsString(hasil));
             if(hasil != null) {
-                String responseStatus = hasil.get("status");
-                if (BniEcollectionConstants.BNI_RESPONSE_STATUS_SUCCESS.equals(responseStatus)) {
-                    VirtualAccount va = new VirtualAccount();
-                    BeanUtils.copyProperties(request, va);
-                    va.setAccountStatus(AccountStatus.ACTIVE);
-                    va.setCreateTime(LocalDateTime.now());
-                    virtualAccountDao.save(va);
-                    LOGGER.info("BNI : VA [{}-{}] sukses diupdate", va.getNumber(), va.getName());
-                    request.setRequestStatus(RequestStatus.SUCCESS);
-                    virtualAccountRequestDao.save(request);
-                } else {
-                    LOGGER.error("BNI : Error update VA [{}-{}], response status {}", request.getNumber(), request.getName(), responseStatus);
-                    request.setRequestStatus(RequestStatus.ERROR);
-                    virtualAccountRequestDao.save(request);
-                }
+                VirtualAccount va = new VirtualAccount();
+                BeanUtils.copyProperties(request, va);
+                va.setAccountStatus(AccountStatus.ACTIVE);
+                va.setCreateTime(LocalDateTime.now());
+                virtualAccountDao.save(va);
+                LOGGER.info("BNI : Update VA [{}-{}] sukses", va.getNumber(), va.getName());
+                request.setRequestStatus(RequestStatus.SUCCESS);
+                virtualAccountRequestDao.save(request);
             } else {
-                LOGGER.error("BNI : Error update VA [{}-{}], response null", request.getNumber(), request.getName());
+                LOGGER.error("BNI : Update VA [{}-{}] error", request.getNumber(), request.getName());
                 request.setRequestStatus(RequestStatus.ERROR);
                 virtualAccountRequestDao.save(request);
             }
@@ -143,8 +136,9 @@ public class BniEcollectionService {
         String responseStatus = hasil.get("status");
         LOGGER.debug("BNI : Response Status : {}",responseStatus);
 
-        if(!"000".equals(responseStatus)) {
+        if(!BniEcollectionConstants.BNI_RESPONSE_STATUS_SUCCESS.equals(responseStatus)) {
             LOGGER.error("BNI : Response status : {}", responseStatus);
+            return null;
         }
 
         return hasil.get("data");
