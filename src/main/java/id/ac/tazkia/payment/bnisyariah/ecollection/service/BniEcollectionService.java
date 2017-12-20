@@ -6,12 +6,14 @@ import id.ac.tazkia.payment.bnisyariah.ecollection.constants.BniEcollectionConst
 import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountDao;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountRequestDao;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dto.CreateVaRequest;
+import id.ac.tazkia.payment.bnisyariah.ecollection.dto.UpdateVaRequest;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -45,6 +48,13 @@ public class BniEcollectionService {
 
     @Async
     public void createVirtualAccount(VirtualAccountRequest request){
+        List<VirtualAccount> existing = virtualAccountDao
+                .findByNumberAndAccountStatus(request.getNumber(), AccountStatus.ACTIVE);
+        if(!existing.isEmpty()) {
+            LOGGER.warn("VA dengan nomor {} sudah ada", request.getNumber());
+            return;
+        }
+
         String datePrefix = DATE_FORMAT.format(LocalDateTime.now(ZoneId.of(TIMEZONE)));
         String prefix = datePrefix;
         Long runningNumber = runningNumberService.getNumber(prefix);
@@ -78,9 +88,63 @@ public class BniEcollectionService {
             if(hasil != null) {
                 VirtualAccount va = new VirtualAccount();
                 BeanUtils.copyProperties(request, va);
+                va.setId(null);
                 va.setAccountStatus(AccountStatus.ACTIVE);
                 va.setCreateTime(LocalDateTime.now());
                 va.setTransactionId(trxId);
+                virtualAccountDao.save(va);
+                LOGGER.info("BNI : Create VA [{}-{}] sukses", va.getNumber(), va.getName());
+                request.setRequestStatus(RequestStatus.SUCCESS);
+                virtualAccountRequestDao.save(request);
+            } else {
+                LOGGER.error("BNI : Create VA [{}-{}] error", request.getNumber(), request.getName());
+                request.setRequestStatus(RequestStatus.ERROR);
+                virtualAccountRequestDao.save(request);
+            }
+        } catch (Exception err){
+            LOGGER.warn(err.getMessage(), err);
+            request.setRequestStatus(RequestStatus.ERROR);
+            virtualAccountRequestDao.save(request);
+        }
+    }
+
+    @Async
+    public void updateVirtualAccount(VirtualAccountRequest request){
+        List<VirtualAccount> existing = virtualAccountDao
+                .findByNumberAndAccountStatus(request.getNumber(), AccountStatus.ACTIVE);
+        if(existing.isEmpty()) {
+            LOGGER.warn("VA dengan nomor {} belum ada", request.getNumber());
+            return;
+        }
+
+        if(existing.size() > 1){
+            LOGGER.warn("VA dengan nomor {} ada {} buah. Update tidak dapat diproses",
+                    request.getNumber(), existing.size());
+            return;
+        }
+
+        VirtualAccount va = existing.iterator().next();
+        String idVa = va.getId(); // save id supaya gak ketimpa id request
+        UpdateVaRequest updateVaRequest = UpdateVaRequest.builder()
+                .clientId(clientId)
+                .customerEmail(request.getEmail())
+                .customerName(request.getName())
+                .customerPhone(request.getPhone())
+                .datetimeExpired(toIso8601(request.getExpireDate()))
+                .description(request.getDescription())
+                .trxAmount(request.getAmount()
+                        .setScale(0, BigDecimal.ROUND_HALF_EVEN).toString())
+                .trxId(va.getTransactionId())
+                .build();
+
+        try {
+            String requestJson = objectMapper.writeValueAsString(updateVaRequest);
+            LOGGER.debug("Update VA Request : {}", requestJson);
+            Map<String, String> hasil = executeRequest(updateVaRequest);
+            LOGGER.debug("Update VA Response : {}", objectMapper.writeValueAsString(hasil));
+            if(hasil != null) {
+                BeanUtils.copyProperties(request, va);
+                va.setId(idVa); //kembalikan id VA
                 virtualAccountDao.save(va);
                 LOGGER.info("BNI : Update VA [{}-{}] sukses", va.getNumber(), va.getName());
                 request.setRequestStatus(RequestStatus.SUCCESS);
