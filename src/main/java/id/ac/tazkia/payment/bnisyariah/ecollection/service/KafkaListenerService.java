@@ -11,6 +11,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service @Transactional
 public class KafkaListenerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerService.class);
@@ -24,6 +26,7 @@ public class KafkaListenerService {
         try {
             LOGGER.debug("Receive message : {}", message);
             VirtualAccountRequest vaRequest = objectMapper.readValue(message, VirtualAccountRequest.class);
+            vaRequest.setRequestTime(LocalDateTime.now());
             vaRequest.setRequestStatus(RequestStatus.NEW);
             virtualAccountRequestDao.save(vaRequest);
             bniEcollectionService.createVirtualAccount(vaRequest);
