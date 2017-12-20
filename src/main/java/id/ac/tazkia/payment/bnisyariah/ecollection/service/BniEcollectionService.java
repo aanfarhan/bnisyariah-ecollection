@@ -80,6 +80,7 @@ public class BniEcollectionService {
                 BeanUtils.copyProperties(request, va);
                 va.setAccountStatus(AccountStatus.ACTIVE);
                 va.setCreateTime(LocalDateTime.now());
+                va.setTransactionId(trxId);
                 virtualAccountDao.save(va);
                 LOGGER.info("BNI : Update VA [{}-{}] sukses", va.getNumber(), va.getName());
                 request.setRequestStatus(RequestStatus.SUCCESS);
