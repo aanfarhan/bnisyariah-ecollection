@@ -3,6 +3,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>id.co.bni.ecollection</groupId>
-  <artifactId>bniecollection-library</artifactId>
+  <artifactId>bni-ecollection-dummy</artifactId>
   <version>1.0.0</version>
 </project>
