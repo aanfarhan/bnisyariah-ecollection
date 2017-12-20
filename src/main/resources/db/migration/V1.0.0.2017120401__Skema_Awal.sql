@@ -11,7 +11,8 @@ CREATE TABLE virtual_account (
   create_time    TIMESTAMP      NOT NULL,
   expire_date    DATE           NOT NULL,
   account_status VARCHAR(255)   NOT NULL,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  UNIQUE (transaction_id)
 );
 
 CREATE TABLE virtual_account_request (
@@ -34,7 +35,9 @@ CREATE TABLE payment (
   id                 VARCHAR(36),
   id_virtual_account VARCHAR(36)    NOT NULL,
   amount             NUMERIC(19, 2) NOT NULL,
+  cumulative_amount  NUMERIC(19, 2) NOT NULL,
   transaction_time   TIMESTAMP      NOT NULL,
+  payment_reference  VARCHAR(36)    NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (id_virtual_account) REFERENCES virtual_account (id)
 );
