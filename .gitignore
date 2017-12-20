@@ -1,6 +1,8 @@
 .DS_Store
 .mvn
 
+application-dev.properties
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 
