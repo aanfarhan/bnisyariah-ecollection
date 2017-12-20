@@ -1,7 +1,6 @@
 package id.ac.tazkia.payment.bnisyariah.ecollection.entity;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -13,7 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data @Entity @Builder
+@Entity @Builder @Getter @Setter @EqualsAndHashCode @NoArgsConstructor @AllArgsConstructor
 public class VirtualAccountRequest {
     @Id
     @GeneratedValue(generator = "uuid")

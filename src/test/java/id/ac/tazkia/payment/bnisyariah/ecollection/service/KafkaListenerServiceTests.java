@@ -28,7 +28,8 @@ public class KafkaListenerServiceTests {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerServiceTests.class);
 
-    @Value("${kafka.topic.createva}") private String topic;
+    @Value("${kafka.topic.createva.request}") private String topic;
+    @Value("${bni.client-id}") private String clientId;
 
     @Autowired private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired private ObjectMapper objectMapper;
@@ -38,7 +39,7 @@ public class KafkaListenerServiceTests {
         VirtualAccountRequest vaRequest = VirtualAccountRequest
                 .builder()
                 .requestTime(LocalDateTime.now())
-                .number(String.valueOf(new Random().nextLong()))
+                .number("8"+clientId+"08123456789012")
                 .requestStatus(RequestStatus.NEW)
                 .requestType(RequestType.CREATE)
                 .accountType(AccountType.CLOSED)
@@ -53,7 +54,7 @@ public class KafkaListenerServiceTests {
         String vaJson = objectMapper.writeValueAsString(vaRequest);
         LOGGER.debug("VA Request JSON : {}", vaJson);
 
-        kafkaTemplate.send(topic, vaJson);
+        //kafkaTemplate.send(topic, vaJson);
         LOGGER.debug("Va Request Sent");
     }
 }

@@ -5,4 +5,6 @@ public interface BniEcollectionConstants {
     String BILLING_TYPE_CLOSED = "c";
     String BILLING_TYPE_OPEN = "o";
     String BILLING_TYPE_INSTALLMENT = "i";
+
+    String BNI_RESPONSE_STATUS_SUCCESS = "000";
 }

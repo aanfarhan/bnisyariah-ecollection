@@ -2,6 +2,7 @@ package id.ac.tazkia.payment.bnisyariah.ecollection.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountRequestDao;
+import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestStatus;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccountRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +17,16 @@ public class KafkaListenerService {
 
     @Autowired private ObjectMapper objectMapper;
     @Autowired private VirtualAccountRequestDao virtualAccountRequestDao;
-    @KafkaListener(topics = "${kafka.topic.createva}", groupId = "${spring.kafka.consumer.group-id}")
+    @Autowired private BniEcollectionService bniEcollectionService;
+
+    @KafkaListener(topics = "${kafka.topic.createva.request}", groupId = "${spring.kafka.consumer.group-id}")
     public void receiveVirtualAccountRequest(String message){
         try {
             LOGGER.debug("Receive message : {}", message);
             VirtualAccountRequest vaRequest = objectMapper.readValue(message, VirtualAccountRequest.class);
+            vaRequest.setRequestStatus(RequestStatus.NEW);
             virtualAccountRequestDao.save(vaRequest);
+            bniEcollectionService.createVirtualAccount(vaRequest);
         } catch (Exception err){
             LOGGER.error(err.getMessage(), err);
         }
