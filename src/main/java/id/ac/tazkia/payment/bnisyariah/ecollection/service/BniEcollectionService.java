@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -41,6 +40,7 @@ public class BniEcollectionService {
     @Value("${bni.client-key}") private String clientKey;
     @Value("${bni.server-url}") private String serverUrl;
 
+    @Autowired private KafkaSenderService kafkaSenderService;
     @Autowired private RunningNumberService runningNumberService;
     @Autowired private VirtualAccountDao virtualAccountDao;
     @Autowired private VirtualAccountRequestDao virtualAccountRequestDao;
@@ -96,6 +96,7 @@ public class BniEcollectionService {
                 LOGGER.info("BNI : Create VA [{}-{}] sukses", va.getNumber(), va.getName());
                 request.setRequestStatus(RequestStatus.SUCCESS);
                 virtualAccountRequestDao.save(request);
+                kafkaSenderService.sendVaResponse(request);
             } else {
                 LOGGER.error("BNI : Create VA [{}-{}] error", request.getNumber(), request.getName());
                 request.setRequestStatus(RequestStatus.ERROR);
@@ -149,6 +150,7 @@ public class BniEcollectionService {
                 LOGGER.info("BNI : Update VA [{}-{}] sukses", va.getNumber(), va.getName());
                 request.setRequestStatus(RequestStatus.SUCCESS);
                 virtualAccountRequestDao.save(request);
+                kafkaSenderService.sendVaResponse(request);
             } else {
                 LOGGER.error("BNI : Update VA [{}-{}] error", request.getNumber(), request.getName());
                 request.setRequestStatus(RequestStatus.ERROR);
