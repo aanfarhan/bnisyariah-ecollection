@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 public class KafkaSenderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSenderService.class);
 
+    @Value("${bni.client-id}") private String clientId;
     @Value("${kafka.topic.bni.va.response}") private String kafkaTopicResponse;
+    @Value("${kafka.topic.bni.va.payment}") private String kafkaTopicPayment;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -27,6 +29,7 @@ public class KafkaSenderService {
         try {
             VaResponse vaResponse = new VaResponse();
             BeanUtils.copyProperties(va, vaResponse);
+            vaResponse.setNumber("8"+clientId+vaResponse.getNumber());
             String jsonResponse = objectMapper.writeValueAsString(vaResponse);
             LOGGER.debug("VA Response : {}", jsonResponse);
             kafkaTemplate.send(kafkaTopicResponse, jsonResponse);
