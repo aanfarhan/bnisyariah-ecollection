@@ -23,9 +23,9 @@ import java.time.LocalDateTime;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:/sql/delete-varequests.sql")
-public class KafkaServiceTests {
+public class KafkaListenerServiceTests {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaServiceTests.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerServiceTests.class);
 
     @Value("${kafka.topic.createva.request}") private String topic;
     @Value("${bni.client-id}") private String clientId;

@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service @Transactional
-public class KafkaService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaService.class);
+public class KafkaListenerService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerService.class);
 
     @Autowired private ObjectMapper objectMapper;
     @Autowired private VirtualAccountRequestDao virtualAccountRequestDao;
