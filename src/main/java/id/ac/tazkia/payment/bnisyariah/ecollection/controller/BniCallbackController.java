@@ -9,6 +9,7 @@ import id.ac.tazkia.payment.bnisyariah.ecollection.dto.PaymentNotificationReques
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.AccountStatus;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.Payment;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccount;
+import id.ac.tazkia.payment.bnisyariah.ecollection.service.KafkaSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class BniCallbackController {
     @Value("${bni.client-id}") private String clientId;
     @Value("${bni.client-key}") private String clientKey;
 
+    @Autowired private KafkaSenderService kafkaSenderService;
     @Autowired private VirtualAccountDao virtualAccountDao;
     @Autowired private PaymentDao paymentDao;
 
@@ -91,6 +93,8 @@ public class BniCallbackController {
                 va.setAccountStatus(AccountStatus.INACTIVE);
                 virtualAccountDao.save(va);
             }
+
+            kafkaSenderService.sendPaymentNotification(p);
             return response;
         } catch (IOException e) {
             LOGGER.error("BNI : Invalid payment notification payload : {}", data);
