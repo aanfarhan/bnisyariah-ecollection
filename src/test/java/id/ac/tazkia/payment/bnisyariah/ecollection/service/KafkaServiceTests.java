@@ -19,14 +19,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:/sql/delete-varequests.sql")
-public class KafkaListenerServiceTests {
+public class KafkaServiceTests {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerServiceTests.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaServiceTests.class);
 
     @Value("${kafka.topic.createva.request}") private String topic;
     @Value("${bni.client-id}") private String clientId;

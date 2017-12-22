@@ -15,14 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service @Transactional
-public class KafkaListenerService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerService.class);
+public class KafkaService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaService.class);
 
     @Autowired private ObjectMapper objectMapper;
     @Autowired private VirtualAccountRequestDao virtualAccountRequestDao;
     @Autowired private BniEcollectionService bniEcollectionService;
 
-    @KafkaListener(topics = "${kafka.topic.createva.request}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${kafka.topic.bni.va.request}", groupId = "${spring.kafka.consumer.group-id}")
     public void receiveVirtualAccountRequest(String message){
         try {
             LOGGER.debug("Receive message : {}", message);
