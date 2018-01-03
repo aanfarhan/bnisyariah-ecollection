@@ -1,5 +1,5 @@
 [
-  {"number" : "081234567890","name" : "Endy Muhardin","description" : "Test Update","email" : "endy@tazkia.ac.id","phone" : "081234567891","amount" : 321000.0,"expireDate" : "2018-02-21","accountType" : "CLOSED","requestType" : "UPDATE"}
+  {"invoiceNumber" : "01234567890","accountNumber" : "081234567890","name" : "Endy Muhardin","description" : "Test Update","email" : "endy@tazkia.ac.id","phone" : "081234567891","amount" : 321000.0,"expireDate" : "2018-02-21","accountType" : "CLOSED","requestType" : "UPDATE"}
   ,
-  {"number" : "081234567891","name" : "Endy Muhardin","description" : "Test Update","email" : "endy@tazkia.ac.id","phone" : "081234567891","amount" : 123000.0,"expireDate" : "2018-02-21","accountType" : "INSTALLMENT","requestType" : "UPDATE"}
+  {"invoiceNumber" : "01234567890","accountNumber" : "081234567891","name" : "Endy Muhardin","description" : "Test Update","email" : "endy@tazkia.ac.id","phone" : "081234567891","amount" : 123000.0,"expireDate" : "2018-02-21","accountType" : "INSTALLMENT","requestType" : "UPDATE"}
 ]
