@@ -16,7 +16,7 @@ before_script:
   - '[[ -f /.dockerenv ]] && ssh-keyscan -H "$SSH_HOSTNAME_TESTING" > ~/.ssh/known_hosts'
   - scp root@$SSH_HOSTNAME_TESTING:~/bni-ecollection-1.0.0.jar /tmp/
   - mkdir -p .mvn/production-repository
-  - mvn deploy:deploy-file -Durl=file://$(pwd)/.mvn/repository -DgroupId=id.co.bni.ecollection -DartifactId=bni-ecollection -Dversion=1.0.0 -Dpackaging=jar -Dfile=/tmp/bni-ecollection-1.0.0.jar
+  - mvn deploy:deploy-file -Durl=file://$(pwd)/.mvn/production-repository -DgroupId=id.co.bni.ecollection -DartifactId=bni-ecollection -Dversion=1.0.0 -Dpackaging=jar -Dfile=/tmp/bni-ecollection-1.0.0.jar
 
 maven-build:
   image: maven:3-jdk-8
