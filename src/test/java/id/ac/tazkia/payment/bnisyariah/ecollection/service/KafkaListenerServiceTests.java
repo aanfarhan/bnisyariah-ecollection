@@ -27,7 +27,7 @@ public class KafkaListenerServiceTests {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerServiceTests.class);
 
-    @Value("${kafka.topic.createva.request}") private String topic;
+    @Value("${kafka.topic.bni.va.request}") private String topic;
     @Value("${bni.client-id}") private String clientId;
 
     @Autowired private KafkaTemplate<String, String> kafkaTemplate;
