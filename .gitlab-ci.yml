@@ -35,7 +35,7 @@ deploy-to-testing:
   image: debian:latest
   stage: deploy
   only:
-    - /-RC\./
+    - tags
   script:
   - scp target/*.jar root@$SSH_HOSTNAME_TESTING:/var/lib/bnisyariah-ecollection/
   - ssh root@$SSH_HOSTNAME_TESTING /var/lib/bnisyariah-ecollection/deploy.sh $CI_PROJECT_NAME-$CI_COMMIT_TAG.jar
