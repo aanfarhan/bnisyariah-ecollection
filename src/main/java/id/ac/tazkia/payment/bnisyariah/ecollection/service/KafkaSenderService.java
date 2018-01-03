@@ -44,7 +44,7 @@ public class KafkaSenderService {
     public void sendPaymentNotification(Payment payment) {
         try {
             VaPayment vaPayment = new VaPayment();
-            vaPayment.setAccountNumber("8"+clientId+payment.getVirtualAccount().getNumber());
+            vaPayment.setAccountNumber("8"+clientId+payment.getVirtualAccount().getAccountNumber());
             vaPayment.setAmount(payment.getAmount());
             vaPayment.setCumulativeAmount(payment.getCumulativeAmount());
             vaPayment.setPaymentTime(payment.getTransactionTime());

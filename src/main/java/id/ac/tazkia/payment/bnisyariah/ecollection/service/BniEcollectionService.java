@@ -49,9 +49,9 @@ public class BniEcollectionService {
     @Async
     public void createVirtualAccount(VirtualAccountRequest request){
         List<VirtualAccount> existing = virtualAccountDao
-                .findByNumberAndAccountStatus(request.getNumber(), AccountStatus.ACTIVE);
+                .findByAccountNumberAndAccountStatus(request.getAccountNumber(), AccountStatus.ACTIVE);
         if(!existing.isEmpty()) {
-            LOGGER.warn("VA dengan nomor {} sudah ada", request.getNumber());
+            LOGGER.warn("VA dengan nomor {} sudah ada", request.getAccountNumber());
             return;
         }
 
@@ -69,7 +69,7 @@ public class BniEcollectionService {
                 .description(request.getDescription())
                 .trxAmount(request.getAmount().setScale(0, BigDecimal.ROUND_HALF_EVEN).toString())
                 .trxId(trxId)
-                .virtualAccount("8"+clientId + request.getNumber())
+                .virtualAccount("8"+clientId + request.getAccountNumber())
                 .build();
 
         if(AccountType.CLOSED.equals(request.getAccountType())){
@@ -93,12 +93,12 @@ public class BniEcollectionService {
                 va.setCreateTime(LocalDateTime.now());
                 va.setTransactionId(trxId);
                 virtualAccountDao.save(va);
-                LOGGER.info("BNI : Create VA [{}-{}] sukses", va.getNumber(), va.getName());
+                LOGGER.info("BNI : Create VA [{}-{}] sukses", va.getAccountNumber(), va.getName());
                 request.setRequestStatus(RequestStatus.SUCCESS);
                 virtualAccountRequestDao.save(request);
                 kafkaSenderService.sendVaResponse(request);
             } else {
-                LOGGER.error("BNI : Create VA [{}-{}] error", request.getNumber(), request.getName());
+                LOGGER.error("BNI : Create VA [{}-{}] error", request.getAccountNumber(), request.getName());
                 request.setRequestStatus(RequestStatus.ERROR);
                 virtualAccountRequestDao.save(request);
             }
@@ -112,15 +112,15 @@ public class BniEcollectionService {
     @Async
     public void updateVirtualAccount(VirtualAccountRequest request){
         List<VirtualAccount> existing = virtualAccountDao
-                .findByNumberAndAccountStatus(request.getNumber(), AccountStatus.ACTIVE);
+                .findByAccountNumberAndAccountStatus(request.getAccountNumber(), AccountStatus.ACTIVE);
         if(existing.isEmpty()) {
-            LOGGER.warn("VA dengan nomor {} belum ada", request.getNumber());
+            LOGGER.warn("VA dengan nomor {} belum ada", request.getAccountNumber());
             return;
         }
 
         if(existing.size() > 1){
             LOGGER.warn("VA dengan nomor {} ada {} buah. Update tidak dapat diproses",
-                    request.getNumber(), existing.size());
+                    request.getAccountNumber(), existing.size());
             return;
         }
 
@@ -147,12 +147,12 @@ public class BniEcollectionService {
                 BeanUtils.copyProperties(request, va);
                 va.setId(idVa); //kembalikan id VA
                 virtualAccountDao.save(va);
-                LOGGER.info("BNI : Update VA [{}-{}] sukses", va.getNumber(), va.getName());
+                LOGGER.info("BNI : Update VA [{}-{}] sukses", va.getAccountNumber(), va.getName());
                 request.setRequestStatus(RequestStatus.SUCCESS);
                 virtualAccountRequestDao.save(request);
                 kafkaSenderService.sendVaResponse(request);
             } else {
-                LOGGER.error("BNI : Update VA [{}-{}] error", request.getNumber(), request.getName());
+                LOGGER.error("BNI : Update VA [{}-{}] error", request.getAccountNumber(), request.getName());
                 request.setRequestStatus(RequestStatus.ERROR);
                 virtualAccountRequestDao.save(request);
             }

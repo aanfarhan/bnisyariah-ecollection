@@ -21,7 +21,7 @@ public class VirtualAccount {
 
     @NotNull
     @NotEmpty
-    private String number;
+    private String accountNumber;
 
     @NotNull @NotEmpty
     private String transactionId;

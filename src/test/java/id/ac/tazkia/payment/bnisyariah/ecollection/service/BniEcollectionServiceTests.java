@@ -26,7 +26,8 @@ public class BniEcollectionServiceTests {
         VirtualAccountRequest vaRequest = VirtualAccountRequest
                 .builder()
                 .requestTime(LocalDateTime.now())
-                .number(String.valueOf(new Random().nextLong()& Long.MAX_VALUE).substring(0,12))
+                .accountNumber(String.valueOf(new Random().nextLong()& Long.MAX_VALUE).substring(0,12))
+                .invoiceNumber(String.valueOf(new Random().nextLong()& Long.MAX_VALUE).substring(0,12))
                 .requestStatus(RequestStatus.NEW)
                 .requestType(RequestType.CREATE)
                 .accountType(AccountType.CLOSED)

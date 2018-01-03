@@ -38,7 +38,8 @@ public class KafkaListenerServiceTests {
         VirtualAccountRequest vaRequest = VirtualAccountRequest
                 .builder()
                 .requestTime(LocalDateTime.now())
-                .number("8"+clientId+"08123456789012")
+                .accountNumber("8"+clientId+"08123456789012")
+                .invoiceNumber("01234567890")
                 .requestStatus(RequestStatus.NEW)
                 .requestType(RequestType.CREATE)
                 .accountType(AccountType.CLOSED)

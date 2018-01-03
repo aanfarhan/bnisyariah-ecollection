@@ -20,7 +20,10 @@ public class VirtualAccountRequest {
     private String id;
 
     @NotNull @NotEmpty
-    private String number;
+    private String accountNumber;
+
+    @NotNull @NotEmpty
+    private String invoiceNumber;
 
     @NotNull @NotEmpty
     private String name;

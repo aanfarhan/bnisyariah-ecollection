@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface VirtualAccountDao extends PagingAndSortingRepository<VirtualAccount, String> {
     VirtualAccount findByTransactionId(String transactionId);
-    List<VirtualAccount> findByNumberAndAccountStatus(String number, AccountStatus status);
+    List<VirtualAccount> findByAccountNumberAndAccountStatus(String number, AccountStatus status);
 }
