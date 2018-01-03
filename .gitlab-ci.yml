@@ -1,0 +1,32 @@
+image: maven:3-jdk-8
+
+cache:
+ paths:
+ - /root/.m2/repository
+
+stages:
+ - build
+ - deploy
+
+before_script:
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && ssh-keyscan -H "$SSH_HOSTNAME_TESTING" > ~/.ssh/known_hosts'
+
+
+maven-build:
+  image: maven:3-jdk-8
+  stage: build
+  services:
+    - postgres:latest
+  variables:
+    POSTGRES_DB : "paymentbnidb"
+    POSTGRES_USER: "paymentbni"
+    POSTGRES_PASSWORD: "paymentbni123"
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres/paymentbnidb
+  script: mvn package -B -Dmaven.repo.local=.m2/repository
+  artifacts:
+    paths:
+      - target/*.jar
