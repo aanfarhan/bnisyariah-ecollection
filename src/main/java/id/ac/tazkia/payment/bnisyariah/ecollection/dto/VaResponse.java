@@ -10,7 +10,8 @@ import java.math.BigDecimal;
 public class VaResponse {
     private RequestType requestType;
     private RequestStatus requestStatus;
-    private String number;
+    private String accountNumber;
+    private String invoiceNumber;
     private String name;
     private BigDecimal amount;
 }

@@ -31,7 +31,7 @@ public class KafkaSenderService {
         try {
             VaResponse vaResponse = new VaResponse();
             BeanUtils.copyProperties(va, vaResponse);
-            vaResponse.setNumber("8"+clientId+vaResponse.getNumber());
+            vaResponse.setAccountNumber("8"+clientId+vaResponse.getAccountNumber());
             String jsonResponse = objectMapper.writeValueAsString(vaResponse);
             LOGGER.debug("VA Response : {}", jsonResponse);
             kafkaTemplate.send(kafkaTopicResponse, jsonResponse);
@@ -44,6 +44,7 @@ public class KafkaSenderService {
     public void sendPaymentNotification(Payment payment) {
         try {
             VaPayment vaPayment = new VaPayment();
+            vaPayment.setInvoiceNumber(payment.getVirtualAccount().getInvoiceNumber());
             vaPayment.setAccountNumber("8"+clientId+payment.getVirtualAccount().getAccountNumber());
             vaPayment.setAmount(payment.getAmount());
             vaPayment.setCumulativeAmount(payment.getCumulativeAmount());

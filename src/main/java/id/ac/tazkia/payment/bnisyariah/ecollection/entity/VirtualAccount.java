@@ -24,6 +24,9 @@ public class VirtualAccount {
     private String accountNumber;
 
     @NotNull @NotEmpty
+    private String invoiceNumber;
+
+    @NotNull @NotEmpty
     private String transactionId;
 
     @NotNull @NotEmpty
