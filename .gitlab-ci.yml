@@ -30,3 +30,12 @@ maven-build:
   artifacts:
     paths:
       - target/*.jar
+
+deploy-to-testing:
+  image: debian:latest
+  stage: deploy
+  only:
+    - /-RC\./
+  script:
+  - scp target/*.jar root@$SSH_HOSTNAME_TESTING:/var/lib/bnisyariah-ecollection/
+  - ssh root@$SSH_HOSTNAME_TESTING /var/lib/bnisyariah-ecollection/deploy.sh $CI_PROJECT_NAME-$CI_COMMIT_TAG.jar
