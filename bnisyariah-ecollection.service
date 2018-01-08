@@ -1,0 +1,11 @@
+[Unit]
+Description=BNI Syariah E-Collection Gateway
+After=syslog.target
+
+[Service]
+User=root
+ExecStart=/var/lib/bnisyariah-ecollection/bnisyariah-ecollection.jar
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
