@@ -67,7 +67,7 @@ public class BniEcollectionService {
                 .customerPhone(request.getPhone())
                 .datetimeExpired(toIso8601(request.getExpireDate()))
                 .description(request.getDescription())
-                .trxAmount(request.getAmount().setScale(0, BigDecimal.ROUND_HALF_EVEN).toString())
+                .trxAmount(request.getAmount().toString())
                 .trxId(trxId)
                 .virtualAccount("8"+clientId + request.getAccountNumber())
                 .build();
@@ -133,8 +133,7 @@ public class BniEcollectionService {
                 .customerPhone(request.getPhone())
                 .datetimeExpired(toIso8601(request.getExpireDate()))
                 .description(request.getDescription())
-                .trxAmount(request.getAmount()
-                        .setScale(0, BigDecimal.ROUND_HALF_EVEN).toString())
+                .trxAmount(request.getAmount().toString())
                 .trxId(va.getTransactionId())
                 .build();
 
