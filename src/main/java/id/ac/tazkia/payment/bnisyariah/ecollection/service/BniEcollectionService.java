@@ -36,6 +36,7 @@ public class BniEcollectionService {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final String TIMEZONE = "GMT+07:00";
 
+    @Value("${bni.client-prefix}") private String clientPrefix;
     @Value("${bni.client-id}") private String clientId;
     @Value("${bni.client-key}") private String clientKey;
     @Value("${bni.server-url}") private String serverUrl;
@@ -69,7 +70,7 @@ public class BniEcollectionService {
                 .description(request.getDescription())
                 .trxAmount(request.getAmount().toString())
                 .trxId(trxId)
-                .virtualAccount("8"+clientId + request.getAccountNumber())
+                .virtualAccount(clientPrefix+clientId + request.getAccountNumber())
                 .build();
 
         if(AccountType.CLOSED.equals(request.getAccountType())){

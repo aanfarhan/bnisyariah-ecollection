@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaSenderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSenderService.class);
-    private static final String bniPrefix = "8";
 
     @Value("${bni.bank-id}") private String bankId;
     @Value("${bni.client-id}") private String clientId;
+    @Value("${bni.client-prefix}") private String clientPrefix;
     @Value("${kafka.topic.bni.va.response}") private String kafkaTopicResponse;
     @Value("${kafka.topic.bni.va.payment}") private String kafkaTopicPayment;
 
@@ -62,6 +62,6 @@ public class KafkaSenderService {
     }
 
     private String accountToVaNumber(String accountNumber) {
-        return bniPrefix + clientId + accountNumber;
+        return clientPrefix + clientId + accountNumber;
     }
 }
