@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class KafkaSenderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSenderService.class);
 
+    @Value("${bni.bank-id}") private String bankId;
     @Value("${bni.client-id}") private String clientId;
     @Value("${kafka.topic.bni.va.response}") private String kafkaTopicResponse;
     @Value("${kafka.topic.bni.va.payment}") private String kafkaTopicPayment;
@@ -44,6 +45,7 @@ public class KafkaSenderService {
     public void sendPaymentNotification(Payment payment) {
         try {
             VaPayment vaPayment = new VaPayment();
+            vaPayment.setBankId(bankId);
             vaPayment.setInvoiceNumber(payment.getVirtualAccount().getInvoiceNumber());
             vaPayment.setAccountNumber("8"+clientId+payment.getVirtualAccount().getAccountNumber());
             vaPayment.setAmount(payment.getAmount());
