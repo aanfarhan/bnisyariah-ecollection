@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaSenderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSenderService.class);
+    private static final String bniPrefix = "8";
 
     @Value("${bni.bank-id}") private String bankId;
     @Value("${bni.client-id}") private String clientId;
@@ -32,7 +33,7 @@ public class KafkaSenderService {
         try {
             VaResponse vaResponse = new VaResponse();
             BeanUtils.copyProperties(va, vaResponse);
-            vaResponse.setAccountNumber("8"+clientId+vaResponse.getAccountNumber());
+            vaResponse.setAccountNumber(accountToVaNumber(va.getAccountNumber()));
             String jsonResponse = objectMapper.writeValueAsString(vaResponse);
             LOGGER.debug("VA Response : {}", jsonResponse);
             kafkaTemplate.send(kafkaTopicResponse, jsonResponse);
@@ -47,7 +48,7 @@ public class KafkaSenderService {
             VaPayment vaPayment = new VaPayment();
             vaPayment.setBankId(bankId);
             vaPayment.setInvoiceNumber(payment.getVirtualAccount().getInvoiceNumber());
-            vaPayment.setAccountNumber("8"+clientId+payment.getVirtualAccount().getAccountNumber());
+            vaPayment.setAccountNumber(accountToVaNumber(payment.getVirtualAccount().getAccountNumber()));
             vaPayment.setAmount(payment.getAmount());
             vaPayment.setCumulativeAmount(payment.getCumulativeAmount());
             vaPayment.setPaymentTime(payment.getTransactionTime());
@@ -58,5 +59,9 @@ public class KafkaSenderService {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    private String accountToVaNumber(String accountNumber) {
+        return bniPrefix + clientId + accountNumber;
     }
 }
