@@ -8,6 +8,7 @@ import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccountRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +19,20 @@ import java.time.LocalDateTime;
 public class KafkaListenerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerService.class);
 
+    @Value("${bni.bank-id}") private String bankId;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private VirtualAccountRequestDao virtualAccountRequestDao;
     @Autowired private BniEcollectionService bniEcollectionService;
 
-    @KafkaListener(topics = "${kafka.topic.bni.va.request}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${kafka.topic.va.request}", groupId = "${spring.kafka.consumer.group-id}")
     public void receiveVirtualAccountRequest(String message){
         try {
             LOGGER.debug("Receive message : {}", message);
             VirtualAccountRequest vaRequest = objectMapper.readValue(message, VirtualAccountRequest.class);
+            if (!bankId.equalsIgnoreCase(vaRequest.getBankId())) {
+                LOGGER.debug("Request untuk bank {}, tidak diproses", vaRequest.getBankId());
+                return;
+            }
             vaRequest.setRequestTime(LocalDateTime.now());
             vaRequest.setRequestStatus(RequestStatus.NEW);
             virtualAccountRequestDao.save(vaRequest);

@@ -13,5 +13,6 @@ public class VaResponse {
     private String accountNumber;
     private String invoiceNumber;
     private String name;
+    private String bankId;
     private BigDecimal amount;
 }

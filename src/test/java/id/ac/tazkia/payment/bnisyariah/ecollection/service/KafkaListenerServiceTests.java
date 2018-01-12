@@ -27,8 +27,9 @@ public class KafkaListenerServiceTests {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerServiceTests.class);
 
-    @Value("${kafka.topic.bni.va.request}") private String topic;
+    @Value("${kafka.topic.va.request}") private String topic;
     @Value("${bni.client-id}") private String clientId;
+    @Value("${bni.client-prefix}") private String clientPrefix;
 
     @Autowired private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired private ObjectMapper objectMapper;
@@ -38,7 +39,7 @@ public class KafkaListenerServiceTests {
         VirtualAccountRequest vaRequest = VirtualAccountRequest
                 .builder()
                 .requestTime(LocalDateTime.now())
-                .accountNumber("8"+clientId+"08123456789012")
+                .accountNumber(clientPrefix+clientId+"08123456789012")
                 .invoiceNumber("01234567890")
                 .requestStatus(RequestStatus.NEW)
                 .requestType(RequestType.CREATE)

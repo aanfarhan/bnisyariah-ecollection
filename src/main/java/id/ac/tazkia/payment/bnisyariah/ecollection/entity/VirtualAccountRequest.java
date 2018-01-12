@@ -20,6 +20,9 @@ public class VirtualAccountRequest {
     private String id;
 
     @NotNull @NotEmpty
+    private String bankId;
+
+    @NotNull @NotEmpty
     private String accountNumber;
 
     @NotNull @NotEmpty

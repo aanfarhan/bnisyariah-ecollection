@@ -21,8 +21,8 @@ public class KafkaSenderService {
     @Value("${bni.bank-id}") private String bankId;
     @Value("${bni.client-id}") private String clientId;
     @Value("${bni.client-prefix}") private String clientPrefix;
-    @Value("${kafka.topic.bni.va.response}") private String kafkaTopicResponse;
-    @Value("${kafka.topic.bni.va.payment}") private String kafkaTopicPayment;
+    @Value("${kafka.topic.va.response}") private String kafkaTopicResponse;
+    @Value("${kafka.topic.va.payment}") private String kafkaTopicPayment;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;

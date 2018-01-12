@@ -1,6 +1,7 @@
 CREATE TABLE virtual_account (
   id             VARCHAR(36),
-  number         VARCHAR(255)   NOT NULL,
+  account_number VARCHAR(255)   NOT NULL,
+  invoice_number VARCHAR(255)   NOT NULL,
   name           VARCHAR(255)   NOT NULL,
   account_type   VARCHAR(255)   NOT NULL,
   amount         NUMERIC(19, 2) NOT NULL,
@@ -12,14 +13,17 @@ CREATE TABLE virtual_account (
   expire_date    DATE           NOT NULL,
   account_status VARCHAR(255)   NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE (transaction_id)
+  UNIQUE (transaction_id),
+  UNIQUE (invoice_number)
 );
 
 CREATE TABLE virtual_account_request (
   id             VARCHAR(36),
   request_type   VARCHAR(255)   NOT NULL,
   request_time   TIMESTAMP      NOT NULL,
-  number         VARCHAR(255)   NOT NULL,
+  account_number VARCHAR(255)   NOT NULL,
+  invoice_number VARCHAR(255)   NOT NULL,
+  bank_id        VARCHAR(255)   NOT NULL,
   name           VARCHAR(255)   NOT NULL,
   account_type   VARCHAR(255)   NOT NULL,
   amount         NUMERIC(19, 2) NOT NULL,
