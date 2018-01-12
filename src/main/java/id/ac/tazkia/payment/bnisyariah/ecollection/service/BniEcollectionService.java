@@ -57,8 +57,7 @@ public class BniEcollectionService {
         }
 
         String datePrefix = DATE_FORMAT.format(LocalDateTime.now(ZoneId.of(TIMEZONE)));
-        String prefix = datePrefix;
-        Long runningNumber = runningNumberService.getNumber(prefix);
+        Long runningNumber = runningNumberService.getNumber(datePrefix);
         String trxId = datePrefix + String.format("%06d", runningNumber);
 
         CreateVaRequest createVaRequest = CreateVaRequest.builder()
