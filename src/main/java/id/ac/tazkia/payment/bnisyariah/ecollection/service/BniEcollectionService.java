@@ -95,18 +95,16 @@ public class BniEcollectionService {
                 virtualAccountDao.save(va);
                 LOGGER.info("BNI : Create VA [{}-{}] sukses", va.getAccountNumber(), va.getName());
                 request.setRequestStatus(RequestStatus.SUCCESS);
-                virtualAccountRequestDao.save(request);
-                kafkaSenderService.sendVaResponse(request);
             } else {
                 LOGGER.error("BNI : Create VA [{}-{}] error", request.getAccountNumber(), request.getName());
                 request.setRequestStatus(RequestStatus.ERROR);
-                virtualAccountRequestDao.save(request);
             }
         } catch (Exception err){
             LOGGER.warn(err.getMessage(), err);
             request.setRequestStatus(RequestStatus.ERROR);
-            virtualAccountRequestDao.save(request);
         }
+        virtualAccountRequestDao.save(request);
+        kafkaSenderService.sendVaResponse(request);
     }
 
     @Async
