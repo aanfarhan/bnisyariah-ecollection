@@ -17,24 +17,6 @@ CREATE TABLE virtual_account (
   UNIQUE (invoice_number)
 );
 
-CREATE TABLE virtual_account_request (
-  id             VARCHAR(36),
-  request_type   VARCHAR(255)   NOT NULL,
-  request_time   TIMESTAMP      NOT NULL,
-  account_number VARCHAR(255)   NOT NULL,
-  invoice_number VARCHAR(255)   NOT NULL,
-  bank_id        VARCHAR(255)   NOT NULL,
-  name           VARCHAR(255)   NOT NULL,
-  account_type   VARCHAR(255)   NOT NULL,
-  amount         NUMERIC(19, 2) NOT NULL,
-  description    VARCHAR(255),
-  email          VARCHAR(255),
-  phone          VARCHAR(255),
-  expire_date    DATE           NOT NULL,
-  request_status VARCHAR(255)   NOT NULL,
-  PRIMARY KEY (id)
-);
-
 CREATE TABLE payment (
   id                 VARCHAR(36),
   id_virtual_account VARCHAR(36)    NOT NULL,

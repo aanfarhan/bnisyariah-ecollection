@@ -2,7 +2,6 @@ package id.ac.tazkia.payment.bnisyariah.ecollection.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.AccountType;
-import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestStatus;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestType;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccountRequest;
 import org.junit.Test;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
@@ -22,7 +20,6 @@ import java.time.LocalDateTime;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@Sql(scripts = "classpath:/sql/delete-varequests.sql")
 public class KafkaListenerServiceTests {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaListenerServiceTests.class);
@@ -41,7 +38,6 @@ public class KafkaListenerServiceTests {
                 .requestTime(LocalDateTime.now())
                 .accountNumber(clientPrefix+clientId+"08123456789012")
                 .invoiceNumber("01234567890")
-                .requestStatus(RequestStatus.NEW)
                 .requestType(RequestType.CREATE)
                 .accountType(AccountType.CLOSED)
                 .amount(BigDecimal.valueOf(100000.00))

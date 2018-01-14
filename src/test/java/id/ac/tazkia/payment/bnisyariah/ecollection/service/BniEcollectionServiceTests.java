@@ -1,7 +1,6 @@
 package id.ac.tazkia.payment.bnisyariah.ecollection.service;
 
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.AccountType;
-import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestStatus;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestType;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccountRequest;
 import org.junit.Test;
@@ -28,7 +27,6 @@ public class BniEcollectionServiceTests {
                 .requestTime(LocalDateTime.now())
                 .accountNumber(String.valueOf(new Random().nextLong()& Long.MAX_VALUE).substring(0,12))
                 .invoiceNumber(String.valueOf(new Random().nextLong()& Long.MAX_VALUE).substring(0,12))
-                .requestStatus(RequestStatus.NEW)
                 .requestType(RequestType.CREATE)
                 .accountType(AccountType.CLOSED)
                 .amount(BigDecimal.valueOf(100000.00))

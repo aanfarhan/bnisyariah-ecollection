@@ -1,1 +1,0 @@
-delete from virtual_account_request;

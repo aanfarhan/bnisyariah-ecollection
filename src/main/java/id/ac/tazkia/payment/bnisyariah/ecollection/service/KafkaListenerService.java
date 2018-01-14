@@ -1,8 +1,6 @@
 package id.ac.tazkia.payment.bnisyariah.ecollection.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountRequestDao;
-import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestStatus;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestType;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccountRequest;
 import org.slf4j.Logger;
@@ -21,7 +19,6 @@ public class KafkaListenerService {
 
     @Value("${bni.bank-id}") private String bankId;
     @Autowired private ObjectMapper objectMapper;
-    @Autowired private VirtualAccountRequestDao virtualAccountRequestDao;
     @Autowired private BniEcollectionService bniEcollectionService;
 
     @KafkaListener(topics = "${kafka.topic.va.request}", groupId = "${spring.kafka.consumer.group-id}")
@@ -34,10 +31,10 @@ public class KafkaListenerService {
                 return;
             }
             vaRequest.setRequestTime(LocalDateTime.now());
-            vaRequest.setRequestStatus(RequestStatus.NEW);
-            virtualAccountRequestDao.save(vaRequest);
             if(RequestType.CREATE.equals(vaRequest.getRequestType())) {
                 bniEcollectionService.createVirtualAccount(vaRequest);
+            } else if(RequestType.DELETE.equals(vaRequest.getRequestType())){
+                bniEcollectionService.deleteVirtualAccount(vaRequest);
             } else if(RequestType.UPDATE.equals(vaRequest.getRequestType())){
                 bniEcollectionService.updateVirtualAccount(vaRequest);
             } else {

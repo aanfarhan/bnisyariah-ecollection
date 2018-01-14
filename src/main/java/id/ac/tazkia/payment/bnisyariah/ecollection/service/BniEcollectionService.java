@@ -4,8 +4,8 @@ import com.bni.encrypt.BNIHash;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.tazkia.payment.bnisyariah.ecollection.constants.BniEcollectionConstants;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountDao;
-import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountRequestDao;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dto.CreateVaRequest;
+import id.ac.tazkia.payment.bnisyariah.ecollection.dto.RequestStatus;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dto.UpdateVaRequest;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.*;
 import org.slf4j.Logger;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -44,7 +43,6 @@ public class BniEcollectionService {
     @Autowired private KafkaSenderService kafkaSenderService;
     @Autowired private RunningNumberService runningNumberService;
     @Autowired private VirtualAccountDao virtualAccountDao;
-    @Autowired private VirtualAccountRequestDao virtualAccountRequestDao;
     @Autowired private ObjectMapper objectMapper;
 
     @Async
@@ -56,27 +54,105 @@ public class BniEcollectionService {
             return;
         }
 
+        VirtualAccount va = new VirtualAccount();
+        BeanUtils.copyProperties(request, va);
+        va.setId(null);
+
+        if (create(va)) {
+            request.setRequestStatus(RequestStatus.SUCCESS);
+        } else {
+            request.setRequestStatus(RequestStatus.ERROR);
+        }
+
+        kafkaSenderService.sendVaResponse(request);
+    }
+
+    @Async
+    public void deleteVirtualAccount(VirtualAccountRequest request) {
+        List<VirtualAccount> existing = virtualAccountDao
+                .findByAccountNumberAndAccountStatus(request.getAccountNumber(), AccountStatus.ACTIVE);
+        if(existing.isEmpty()) {
+            LOGGER.warn("VA dengan nomor {} belum ada", request.getAccountNumber());
+            return;
+        }
+
+        if(existing.size() > 1){
+            LOGGER.warn("VA dengan nomor {} ada {} buah. Delete tidak dapat diproses",
+                    request.getAccountNumber(), existing.size());
+            return;
+        }
+
+        VirtualAccount va = existing.iterator().next();
+
+        if (delete(va)) {
+            request.setRequestStatus(RequestStatus.SUCCESS);
+        } else {
+            request.setRequestStatus(RequestStatus.ERROR);
+        }
+
+        kafkaSenderService.sendVaResponse(request);
+    }
+
+    @Async
+    public void updateVirtualAccount(VirtualAccountRequest request){
+        List<VirtualAccount> existing = virtualAccountDao
+                .findByAccountNumberAndAccountStatus(request.getAccountNumber(), AccountStatus.ACTIVE);
+        if(existing.isEmpty()) {
+            sendRequestError("VA dengan nomor {} tidak terdaftar", request);
+            return;
+        }
+
+        if(existing.size() > 1){
+            sendRequestError("VA dengan nomor {} duplikat", request);
+            return;
+        }
+
+        VirtualAccount va = existing.iterator().next();
+
+        if (!delete(va)) {
+            sendRequestError("VA dengan nomor {} gagal diupdate", request);
+            return;
+        }
+        va.setId(null);
+        if (!create(va)) {
+            sendRequestError("VA dengan nomor {} gagal diupdate", request);
+            request.setRequestStatus(RequestStatus.ERROR);
+            kafkaSenderService.sendVaResponse(request);
+            return;
+        }
+        request.setRequestStatus(RequestStatus.SUCCESS);
+        kafkaSenderService.sendVaResponse(request);
+    }
+
+    private void sendRequestError(String message, VirtualAccountRequest request) {
+        LOGGER.warn(message, request.getAccountNumber());
+        request.setRequestStatus(RequestStatus.ERROR);
+        kafkaSenderService.sendVaResponse(request);
+    }
+
+    private boolean create(VirtualAccount virtualAccount) {
         String datePrefix = DATE_FORMAT.format(LocalDateTime.now(ZoneId.of(TIMEZONE)));
         Long runningNumber = runningNumberService.getNumber(datePrefix);
         String trxId = datePrefix + String.format("%06d", runningNumber);
+        virtualAccount.setTransactionId(trxId);
 
         CreateVaRequest createVaRequest = CreateVaRequest.builder()
                 .clientId(clientId)
-                .customerEmail(request.getEmail())
-                .customerName(request.getName())
-                .customerPhone(request.getPhone())
-                .datetimeExpired(toIso8601(request.getExpireDate()))
-                .description(request.getDescription())
-                .trxAmount(request.getAmount().toString())
+                .customerEmail(virtualAccount.getEmail())
+                .customerName(virtualAccount.getName())
+                .customerPhone(virtualAccount.getPhone())
+                .datetimeExpired(toIso8601(virtualAccount.getExpireDate()))
+                .description(virtualAccount.getDescription())
+                .trxAmount(virtualAccount.getAmount().toString())
                 .trxId(trxId)
-                .virtualAccount(clientPrefix+clientId + request.getAccountNumber())
+                .virtualAccount(clientPrefix+clientId + virtualAccount.getAccountNumber())
                 .build();
 
-        if(AccountType.CLOSED.equals(request.getAccountType())){
+        if(AccountType.CLOSED.equals(virtualAccount.getAccountType())){
             createVaRequest.setBillingType(BniEcollectionConstants.BILLING_TYPE_CLOSED);
-        } else if(AccountType.INSTALLMENT.equals(request.getAccountType())){
+        } else if(AccountType.INSTALLMENT.equals(virtualAccount.getAccountType())){
             createVaRequest.setBillingType(BniEcollectionConstants.BILLING_TYPE_INSTALLMENT);
-        } else if(AccountType.OPEN.equals(request.getAccountType())){
+        } else if(AccountType.OPEN.equals(virtualAccount.getAccountType())){
             createVaRequest.setBillingType(BniEcollectionConstants.BILLING_TYPE_OPEN);
         }
 
@@ -86,78 +162,49 @@ public class BniEcollectionService {
             Map<String, String> hasil = executeRequest(createVaRequest);
             LOGGER.debug("Create VA Response : {}", objectMapper.writeValueAsString(hasil));
             if(hasil != null) {
-                VirtualAccount va = new VirtualAccount();
-                BeanUtils.copyProperties(request, va);
-                va.setId(null);
-                va.setAccountStatus(AccountStatus.ACTIVE);
-                va.setCreateTime(LocalDateTime.now());
-                va.setTransactionId(trxId);
-                virtualAccountDao.save(va);
-                LOGGER.info("BNI : Create VA [{}-{}] sukses", va.getAccountNumber(), va.getName());
-                request.setRequestStatus(RequestStatus.SUCCESS);
+                virtualAccount.setAccountStatus(AccountStatus.ACTIVE);
+                virtualAccount.setCreateTime(LocalDateTime.now());
+                virtualAccountDao.save(virtualAccount);
+                LOGGER.info("BNI : Create VA [{}-{}] sukses", virtualAccount.getAccountNumber(), virtualAccount.getName());
+                return true;
             } else {
-                LOGGER.error("BNI : Create VA [{}-{}] error", request.getAccountNumber(), request.getName());
-                request.setRequestStatus(RequestStatus.ERROR);
+                LOGGER.warn("BNI : Create VA [{}-{}] error", virtualAccount.getAccountNumber(), virtualAccount.getName());
             }
         } catch (Exception err){
             LOGGER.warn(err.getMessage(), err);
-            request.setRequestStatus(RequestStatus.ERROR);
         }
-        virtualAccountRequestDao.save(request);
-        kafkaSenderService.sendVaResponse(request);
+        return false;
     }
 
-    @Async
-    public void updateVirtualAccount(VirtualAccountRequest request){
-        List<VirtualAccount> existing = virtualAccountDao
-                .findByAccountNumberAndAccountStatus(request.getAccountNumber(), AccountStatus.ACTIVE);
-        if(existing.isEmpty()) {
-            LOGGER.warn("VA dengan nomor {} belum ada", request.getAccountNumber());
-            return;
-        }
-
-        if(existing.size() > 1){
-            LOGGER.warn("VA dengan nomor {} ada {} buah. Update tidak dapat diproses",
-                    request.getAccountNumber(), existing.size());
-            return;
-        }
-
-        VirtualAccount va = existing.iterator().next();
-        String idVa = va.getId(); // save id supaya gak ketimpa id request
+    private boolean delete(VirtualAccount virtualAccount) {
         UpdateVaRequest updateVaRequest = UpdateVaRequest.builder()
                 .clientId(clientId)
-                .customerEmail(request.getEmail())
-                .customerName(request.getName())
-                .customerPhone(request.getPhone())
-                .datetimeExpired(toIso8601(request.getExpireDate()))
-                .description(request.getDescription())
-                .trxAmount(request.getAmount().toString())
-                .trxId(va.getTransactionId())
+                .customerEmail(virtualAccount.getEmail())
+                .customerName(virtualAccount.getName())
+                .customerPhone(virtualAccount.getPhone())
+                .datetimeExpired(toIso8601(LocalDate.now().minusDays(5)))
+                .description(virtualAccount.getDescription() + " dihapus")
+                .trxAmount(virtualAccount.getAmount().toString())
+                .trxId(virtualAccount.getTransactionId())
                 .build();
 
         try {
             String requestJson = objectMapper.writeValueAsString(updateVaRequest);
-            LOGGER.debug("Update VA Request : {}", requestJson);
+            LOGGER.debug("Delete VA Request : {}", requestJson);
             Map<String, String> hasil = executeRequest(updateVaRequest);
-            LOGGER.debug("Update VA Response : {}", objectMapper.writeValueAsString(hasil));
+            LOGGER.debug("Delete VA Response : {}", objectMapper.writeValueAsString(hasil));
             if(hasil != null) {
-                BeanUtils.copyProperties(request, va);
-                va.setId(idVa); //kembalikan id VA
-                virtualAccountDao.save(va);
-                LOGGER.info("BNI : Update VA [{}-{}] sukses", va.getAccountNumber(), va.getName());
-                request.setRequestStatus(RequestStatus.SUCCESS);
-                virtualAccountRequestDao.save(request);
-                kafkaSenderService.sendVaResponse(request);
+                virtualAccount.setAccountStatus(AccountStatus.INACTIVE);
+                virtualAccountDao.save(virtualAccount);
+                LOGGER.info("BNI : Delete VA [{}-{}] sukses", virtualAccount.getAccountNumber(), virtualAccount.getName());
+                return true;
             } else {
-                LOGGER.error("BNI : Update VA [{}-{}] error", request.getAccountNumber(), request.getName());
-                request.setRequestStatus(RequestStatus.ERROR);
-                virtualAccountRequestDao.save(request);
+                LOGGER.error("BNI : Delete VA [{}-{}] error", virtualAccount.getAccountNumber(), virtualAccount.getName());
             }
         } catch (Exception err){
             LOGGER.warn(err.getMessage(), err);
-            request.setRequestStatus(RequestStatus.ERROR);
-            virtualAccountRequestDao.save(request);
         }
+        return false;
     }
 
     private String toIso8601(LocalDate d) {
