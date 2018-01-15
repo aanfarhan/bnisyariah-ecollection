@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -143,7 +144,7 @@ public class BniEcollectionService {
                 .customerPhone(virtualAccount.getPhone())
                 .datetimeExpired(toIso8601(virtualAccount.getExpireDate()))
                 .description(virtualAccount.getDescription())
-                .trxAmount(virtualAccount.getAmount().toString())
+                .trxAmount(virtualAccount.getAmount().setScale(0, RoundingMode.DOWN).toString())
                 .trxId(trxId)
                 .virtualAccount(clientPrefix+clientId + virtualAccount.getAccountNumber())
                 .build();
@@ -184,7 +185,7 @@ public class BniEcollectionService {
                 .customerPhone(virtualAccount.getPhone())
                 .datetimeExpired(toIso8601(LocalDate.now().minusDays(5)))
                 .description(virtualAccount.getDescription() + " dihapus")
-                .trxAmount(virtualAccount.getAmount().toString())
+                .trxAmount(virtualAccount.getAmount().setScale(0, RoundingMode.DOWN).toString())
                 .trxId(virtualAccount.getTransactionId())
                 .build();
 
