@@ -48,10 +48,19 @@ public class BniEcollectionService {
 
     @Async
     public void createVirtualAccount(VirtualAccountRequest request){
+        if (virtualAccountDao.findByInvoiceNumber(request.getInvoiceNumber()) != null) {
+            LOGGER.warn("VA dengan nomor invoice {} sudah ada", request.getInvoiceNumber());
+            request.setRequestStatus(RequestStatus.ERROR);
+            kafkaSenderService.sendVaResponse(request);
+            return;
+        }
+
         List<VirtualAccount> existing = virtualAccountDao
                 .findByAccountNumberAndAccountStatus(request.getAccountNumber(), AccountStatus.ACTIVE);
         if(!existing.isEmpty()) {
             LOGGER.warn("VA dengan nomor {} sudah ada", request.getAccountNumber());
+            request.setRequestStatus(RequestStatus.ERROR);
+            kafkaSenderService.sendVaResponse(request);
             return;
         }
 
