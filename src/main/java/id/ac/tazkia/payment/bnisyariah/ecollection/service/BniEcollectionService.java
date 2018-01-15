@@ -114,7 +114,14 @@ public class BniEcollectionService {
             sendRequestError("VA dengan nomor {} gagal diupdate", request);
             return;
         }
-        va.setId(null);
+
+        va.setExpireDate(request.getExpireDate());
+        va.setAmount(request.getAmount());
+        va.setDescription(request.getDescription());
+        va.setEmail(request.getEmail());
+        va.setName(request.getName());
+        va.setPhone(request.getPhone());
+
         if (!create(va)) {
             sendRequestError("VA dengan nomor {} gagal diupdate", request);
             request.setRequestStatus(RequestStatus.ERROR);
