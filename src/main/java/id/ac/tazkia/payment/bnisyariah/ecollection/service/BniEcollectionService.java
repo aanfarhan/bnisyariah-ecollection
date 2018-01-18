@@ -125,7 +125,7 @@ public class BniEcollectionService {
         }
 
         // kalau tanggal expire yang baru sudah lewat, tidak perlu bikin VA baru
-        if (LocalDate.now().isAfter(va.getExpireDate())) {
+        if (va.getExpireDate().isBefore(LocalDate.now())) {
             request.setRequestStatus(RequestStatus.SUCCESS);
             kafkaSenderService.sendVaResponse(request);
             return;
