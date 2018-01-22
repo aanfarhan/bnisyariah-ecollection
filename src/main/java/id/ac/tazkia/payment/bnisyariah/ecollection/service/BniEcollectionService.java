@@ -40,6 +40,7 @@ public class BniEcollectionService {
     @Value("${bni.client-id}") private String clientId;
     @Value("${bni.client-key}") private String clientKey;
     @Value("${bni.server-url}") private String serverUrl;
+    @Value("${bni.send-email}") private Boolean sendEmail;
 
     @Autowired private KafkaSenderService kafkaSenderService;
     @Autowired private RunningNumberService runningNumberService;
@@ -178,6 +179,10 @@ public class BniEcollectionService {
             createVaRequest.setBillingType(BniEcollectionConstants.BILLING_TYPE_INSTALLMENT);
         } else if(AccountType.OPEN.equals(virtualAccount.getAccountType())){
             createVaRequest.setBillingType(BniEcollectionConstants.BILLING_TYPE_OPEN);
+        }
+
+        if (!sendEmail) {
+            createVaRequest.setCustomerEmail(null);
         }
 
         try {
