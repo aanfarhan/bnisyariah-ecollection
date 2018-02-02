@@ -59,8 +59,8 @@ public class BniEcollectionService {
         List<VirtualAccount> existing = virtualAccountDao
                 .findByAccountNumberAndAccountStatus(request.getAccountNumber(), AccountStatus.ACTIVE);
         if(!existing.isEmpty()) {
-            LOGGER.warn("VA dengan nomor {} sudah ada", request.getAccountNumber());
-            request.setRequestStatus(RequestStatus.ERROR);
+            LOGGER.info("VA dengan nomor {} sudah ada", request.getAccountNumber());
+            request.setRequestStatus(RequestStatus.SUCCESS);
             kafkaSenderService.sendVaResponse(request);
             return;
         }
