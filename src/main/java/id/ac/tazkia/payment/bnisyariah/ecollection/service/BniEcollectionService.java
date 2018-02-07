@@ -49,9 +49,11 @@ public class BniEcollectionService {
 
     @Async
     public void createVirtualAccount(VirtualAccountRequest request){
-        if (virtualAccountDao.findByInvoiceNumber(request.getInvoiceNumber()) != null) {
+        VirtualAccount vaInvoice = virtualAccountDao.findByInvoiceNumber(request.getInvoiceNumber());
+        if (vaInvoice != null) {
             LOGGER.warn("VA dengan nomor invoice {} sudah ada", request.getInvoiceNumber());
-            request.setRequestStatus(RequestStatus.ERROR);
+            request.setAccountNumber(vaInvoice.getAccountNumber());
+            request.setRequestStatus(RequestStatus.SUCCESS);
             kafkaSenderService.sendVaResponse(request);
             return;
         }
