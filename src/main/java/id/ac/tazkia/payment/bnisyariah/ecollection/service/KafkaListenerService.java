@@ -72,19 +72,31 @@ public class KafkaListenerService {
                     payment.getBankId(),
                     payment.getCumulativeAmount());
 
-            // hapus va lama
-            Boolean suksesDelete = bniEcollectionService.delete(va);
+            // create lagi VA dengan nilai baru
+            VirtualAccountRequest request = VirtualAccountRequest.builder()
+                    .requestTime(LocalDateTime.now())
+                    .requestType(RequestType.CREATE)
+                    .accountNumber(va.getAccountNumber())
+                    .accountType(va.getAccountType())
+                    .bankId(bankId)
+                    .description(va.getDescription())
+                    .email(va.getEmail())
+                    .invoiceNumber(va.getInvoiceNumber())
+                    .expireDate(va.getExpireDate())
+                    .name(va.getName())
+                    .phone(va.getPhone())
+                    .build();
 
             // kalau pembayaran full, hapus va
             if (va.getAmount().compareTo(payment.getCumulativeAmount()) == 0) {
-                return;
+                request.setRequestType(RequestType.DELETE);
+            } else {
+                request.setRequestType(RequestType.UPDATE);
+                request.setAmount(va.getAmount().subtract(payment.getCumulativeAmount()));
             }
 
-            // pembayaran sebagian, update nilai va
-            va.setAmount(va.getAmount().subtract(payment.getCumulativeAmount()));
+            bniEcollectionService.updateVirtualAccount(request);
 
-            // create lagi VA dengan nilai baru
-            bniEcollectionService.create(va);
         } catch (Exception err) {
             LOGGER.error(err.getMessage(), err);
         }
