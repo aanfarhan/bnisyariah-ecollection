@@ -214,7 +214,7 @@ public class BniEcollectionService {
                 .customerName(virtualAccount.getName())
                 .customerPhone(virtualAccount.getPhone())
                 .datetimeExpired(toIso8601(LocalDate.now().minusDays(5)))
-                .description(virtualAccount.getDescription() + " dihapus")
+                .description(virtualAccount.getAccountNumber() + " dihapus")
                 .trxAmount(virtualAccount.getAmount().setScale(0, RoundingMode.DOWN).toString())
                 .trxId(virtualAccount.getTransactionId())
                 .build();
