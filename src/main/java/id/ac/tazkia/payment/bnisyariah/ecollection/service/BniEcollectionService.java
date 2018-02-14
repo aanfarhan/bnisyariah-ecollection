@@ -157,7 +157,7 @@ public class BniEcollectionService {
         kafkaSenderService.sendVaResponse(request);
     }
 
-    private boolean create(VirtualAccount virtualAccount) {
+    public boolean create(VirtualAccount virtualAccount) {
         String datePrefix = DATE_FORMAT.format(LocalDateTime.now(ZoneId.of(TIMEZONE)));
         Long runningNumber = runningNumberService.getNumber(datePrefix);
         String trxId = datePrefix + String.format("%06d", runningNumber);
@@ -207,7 +207,7 @@ public class BniEcollectionService {
         return false;
     }
 
-    private boolean delete(VirtualAccount virtualAccount) {
+    public boolean delete(VirtualAccount virtualAccount) {
         UpdateVaRequest updateVaRequest = UpdateVaRequest.builder()
                 .clientId(clientId)
                 .customerEmail(virtualAccount.getEmail())

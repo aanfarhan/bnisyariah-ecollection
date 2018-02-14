@@ -1,7 +1,11 @@
 package id.ac.tazkia.payment.bnisyariah.ecollection.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountDao;
+import id.ac.tazkia.payment.bnisyariah.ecollection.dto.VaPayment;
+import id.ac.tazkia.payment.bnisyariah.ecollection.entity.AccountStatus;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestType;
+import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccount;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccountRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +24,7 @@ public class KafkaListenerService {
     @Value("${bni.bank-id}") private String bankId;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private BniEcollectionService bniEcollectionService;
+    @Autowired private VirtualAccountDao virtualAccountDao;
 
     @KafkaListener(topics = "${kafka.topic.va.request}", groupId = "${spring.kafka.consumer.group-id}")
     public void receiveVirtualAccountRequest(String message){
@@ -41,6 +46,46 @@ public class KafkaListenerService {
                 LOGGER.warn("Virtual Account Request Type {} belum dibuat", vaRequest.getRequestType());
             }
         } catch (Exception err){
+            LOGGER.error(err.getMessage(), err);
+        }
+    }
+
+    @KafkaListener(topics = "${kafka.topic.va.payment}", groupId = "${spring.kafka.consumer.group-id}")
+    public void handleVaPayment(String message) {
+        try {
+            LOGGER.debug("Receive message : {}", message);
+            VaPayment payment = objectMapper.readValue(message, VaPayment.class);
+
+            // notif dari diri sendiri, tidak perlu diproses
+            if (bankId.equalsIgnoreCase(payment.getBankId())) {
+                return;
+            }
+
+            VirtualAccount va = virtualAccountDao.findByInvoiceNumber(payment.getInvoiceNumber());
+            // bila va tidak terdaftar di sini, tidak perlu dilanjutkan
+            if (va == null || !AccountStatus.ACTIVE.equals(va.getAccountStatus())) {
+                return;
+            }
+
+            LOGGER.info("VA {} dibayar di bank {} senilai {}",
+                    va.getAccountNumber(),
+                    payment.getBankId(),
+                    payment.getCumulativeAmount());
+
+            // hapus va lama
+            Boolean suksesDelete = bniEcollectionService.delete(va);
+
+            // kalau pembayaran full, hapus va
+            if (va.getAmount().compareTo(payment.getCumulativeAmount()) == 0) {
+                return;
+            }
+
+            // pembayaran sebagian, update nilai va
+            va.setAmount(va.getAmount().subtract(payment.getCumulativeAmount()));
+
+            // create lagi VA dengan nilai baru
+            bniEcollectionService.create(va);
+        } catch (Exception err) {
             LOGGER.error(err.getMessage(), err);
         }
     }
