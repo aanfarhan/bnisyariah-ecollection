@@ -87,15 +87,16 @@ public class KafkaListenerService {
                     .phone(va.getPhone())
                     .build();
 
+            request.setAmount(va.getAmount().subtract(payment.getCumulativeAmount()));
+
             // kalau pembayaran full, hapus va
             if (va.getAmount().compareTo(payment.getCumulativeAmount()) == 0) {
                 request.setRequestType(RequestType.DELETE);
+                bniEcollectionService.deleteVirtualAccount(request);
             } else {
                 request.setRequestType(RequestType.UPDATE);
-                request.setAmount(va.getAmount().subtract(payment.getCumulativeAmount()));
+                bniEcollectionService.updateVirtualAccount(request);
             }
-
-            bniEcollectionService.updateVirtualAccount(request);
 
         } catch (Exception err) {
             LOGGER.error(err.getMessage(), err);
