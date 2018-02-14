@@ -1,14 +1,9 @@
 package id.ac.tazkia.payment.bnisyariah.ecollection.entity;
 
 import id.ac.tazkia.payment.bnisyariah.ecollection.dto.RequestStatus;
-import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+import lombok.Builder;
+import lombok.Data;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
