@@ -1,6 +1,7 @@
 package id.ac.tazkia.payment.bnisyariah.ecollection.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.tazkia.payment.bnisyariah.ecollection.dto.VaPayment;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.AccountType;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.RequestType;
 import id.ac.tazkia.payment.bnisyariah.ecollection.entity.VirtualAccountRequest;
@@ -27,6 +28,7 @@ public class KafkaListenerServiceTests {
     @Value("${kafka.topic.va.request}") private String topic;
     @Value("${bni.client-id}") private String clientId;
     @Value("${bni.client-prefix}") private String clientPrefix;
+    @Value("${bni.bank-id}") private String bankId;
 
     @Autowired private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired private ObjectMapper objectMapper;
@@ -53,5 +55,19 @@ public class KafkaListenerServiceTests {
 
         //kafkaTemplate.send(topic, vaJson);
         LOGGER.debug("Va Request Sent");
+    }
+
+    @Test
+    public void testSendPaymentNotification() throws Exception {
+        VaPayment vaPayment = new VaPayment();
+        vaPayment.setBankId(bankId);
+        vaPayment.setInvoiceNumber("2018032312000276");
+        vaPayment.setAccountNumber("8311121519076000");
+        vaPayment.setAmount(new BigDecimal("1000000"));
+        vaPayment.setCumulativeAmount(new BigDecimal("1000000"));
+        vaPayment.setPaymentTime(LocalDateTime.of(2018,4,5,9,38,8));
+        vaPayment.setReference("729973");
+        String jsonData = objectMapper.writeValueAsString(vaPayment);
+        System.out.println("JSON Data :"+jsonData);
     }
 }
