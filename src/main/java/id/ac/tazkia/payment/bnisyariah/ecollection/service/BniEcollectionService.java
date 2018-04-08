@@ -3,6 +3,7 @@ package id.ac.tazkia.payment.bnisyariah.ecollection.service;
 import com.bni.encrypt.BNIHash;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.tazkia.payment.bnisyariah.ecollection.constants.BniEcollectionConstants;
+import id.ac.tazkia.payment.bnisyariah.ecollection.dao.PaymentDao;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dao.VirtualAccountDao;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dto.CreateVaRequest;
 import id.ac.tazkia.payment.bnisyariah.ecollection.dto.RequestStatus;
@@ -45,6 +46,7 @@ public class BniEcollectionService {
     @Autowired private KafkaSenderService kafkaSenderService;
     @Autowired private RunningNumberService runningNumberService;
     @Autowired private VirtualAccountDao virtualAccountDao;
+    @Autowired private PaymentDao paymentDao;
     @Autowired private ObjectMapper objectMapper;
 
     @Async
@@ -147,6 +149,25 @@ public class BniEcollectionService {
             kafkaSenderService.sendVaResponse(request);
             return;
         }
+        request.setRequestStatus(RequestStatus.SUCCESS);
+        kafkaSenderService.sendVaResponse(request);
+    }
+
+    public void checkVirtualAccount(VirtualAccountRequest request) {
+        VirtualAccount vaInvoice = virtualAccountDao.findByInvoiceNumber(request.getInvoiceNumber());
+        if (vaInvoice == null) {
+            LOGGER.warn("VA dengan nomor invoice {} tidak ditemukan", request.getInvoiceNumber());
+            request.setRequestStatus(RequestStatus.ERROR);
+            kafkaSenderService.sendVaResponse(request);
+            return;
+        }
+
+        List<Payment> paymentList = paymentDao.findByVirtualAccount(vaInvoice);
+        LOGGER.info("Ada {} payment untuk invoice {}", paymentList.size(), vaInvoice.getInvoiceNumber());
+        for (Payment p : paymentList) {
+            kafkaSenderService.sendPaymentNotification(p);
+        }
+
         request.setRequestStatus(RequestStatus.SUCCESS);
         kafkaSenderService.sendVaResponse(request);
     }
