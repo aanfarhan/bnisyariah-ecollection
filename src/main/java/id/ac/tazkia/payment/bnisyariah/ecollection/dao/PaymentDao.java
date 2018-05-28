@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface PaymentDao extends PagingAndSortingRepository<Payment, String> {
     List<Payment> findByVirtualAccount(VirtualAccount virtualAccount);
+    Iterable<Payment> findByPaymentReference(String paymentReference);
 }
