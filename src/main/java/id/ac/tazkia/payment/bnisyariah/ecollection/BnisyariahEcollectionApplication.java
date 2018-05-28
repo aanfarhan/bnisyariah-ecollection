@@ -42,6 +42,7 @@ public class BnisyariahEcollectionApplication implements CommandLineRunner {
 				kafkaSenderService.sendPaymentNotification(payment);
 				counter++;
 			}
+			resendPaymentDao.delete(rp);
 		}
 		LOGGER.info("Resend {} payments", counter);
 	}
