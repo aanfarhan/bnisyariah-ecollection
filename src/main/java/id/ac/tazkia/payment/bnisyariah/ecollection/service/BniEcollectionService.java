@@ -14,11 +14,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -290,12 +291,15 @@ public class BniEcollectionService {
         wireData.put("client_id", clientId);
         wireData.put("data", encryptedData);
 
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, String>> request = new HttpEntity<Map<String, String>>(wireData, headers);
-        ResponseEntity<Map> response = restTemplate.exchange(serverUrl, HttpMethod.POST, request, Map.class);
-        Map<String, String> hasil = response.getBody();
+        WebClient webClient = WebClient.create(serverUrl);
+        Mono<Map> responseMono = webClient.post().uri("/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .syncBody(wireData)
+                .retrieve()
+                .bodyToMono(Map.class);
+
+        Map<String, String> hasil = responseMono.block();
+
         String responseStatus = hasil.get("status");
         LOGGER.debug("BNI : Response Status : {}",responseStatus);
 
